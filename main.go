@@ -6,12 +6,6 @@ import (
 	"os"
 )
 
-type cliCommand struct {
-	name        string
-	description string
-	callback    func() error
-}
-
 func main() {
 	mep := map[string]cliCommand{
 		"exit": {
@@ -24,8 +18,22 @@ func main() {
 			description: "Displays a help message",
 			callback:    commandHelp,
 		},
+		"map": {
+			name:        "map",
+			description: "Displays 20 location areas in Pokemon World",
+			callback:    commandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "Displays previous 20 location in Pokemon World",
+			callback:    commandMapB,
+		},
 	}
 	sc := bufio.NewScanner(os.Stdin)
+	conf := &config{
+		Previous: "",
+		Next:     "",
+	}
 	for {
 		fmt.Print("Pokedex > ")
 		if !sc.Scan() {
@@ -36,26 +44,19 @@ func main() {
 		if !ok {
 			fmt.Println("Unknown command")
 		}
+
 		switch val.name {
 		case "help":
-			val.callback()
+			val.callback(&config{})
 			for k, v := range mep {
 				fmt.Printf("%s: %s\n", k, v.description)
 			}
 		case "exit":
-			val.callback()
+			val.callback(&config{})
+		case "map":
+			val.callback(conf)
+		case "mapb":
+			val.callback(conf)
 		}
 	}
-}
-
-func commandExit() error {
-	fmt.Println("Closing the Pokedex... Goodbye!")
-	os.Exit(0)
-	return nil
-}
-
-func commandHelp() error {
-	fmt.Println("Welcome to the Pokedex!\nUsage:")
-	fmt.Println()
-	return nil
 }
