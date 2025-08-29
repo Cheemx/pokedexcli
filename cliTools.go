@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Cheemx/pokedexcli/internal"
+	"github.com/Cheemx/pokedexcli/internal/pokeapi"
 )
 
 const (
@@ -14,6 +14,7 @@ const (
 type config struct {
 	Previous string
 	Next     string
+	Client   pokeapi.Client
 }
 
 type cliCommand struct {
@@ -35,12 +36,12 @@ func commandHelp(c *config) error {
 }
 
 func commandMap(c *config) error {
-	var res internal.PokeResponse
+	var res pokeapi.PokeResponse
 	var err error
 	if c.Next == "" {
-		res, err = internal.GetPokeLocationAreas(locationAreaAPI)
+		res, err = c.Client.GetPokeLocationAreas(locationAreaAPI)
 	} else {
-		res, err = internal.GetPokeLocationAreas(c.Next)
+		res, err = c.Client.GetPokeLocationAreas(c.Next)
 	}
 	if err != nil {
 		return err
@@ -58,9 +59,9 @@ func commandMapB(c *config) error {
 		fmt.Println("you're on the first page.")
 		return nil
 	}
-	var res internal.PokeResponse
+	var res pokeapi.PokeResponse
 	var err error
-	res, err = internal.GetPokeLocationAreas(c.Previous)
+	res, err = c.Client.GetPokeLocationAreas(c.Previous)
 	if err != nil {
 		return err
 	}

@@ -1,11 +1,12 @@
 // internal manages all PokeAPI interactions.
 
-package internal
+package pokeapi
 
 import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"time"
 )
 
 // internal is a special directory name recognised by the go tool
@@ -22,12 +23,28 @@ type PokeResponse struct {
 	} `json:"results,omitempty"`
 }
 
-func GetPokeLocationAreas(url string) (PokeResponse, error) {
-	res, err := http.Get(url)
+type Client struct {
+	httpClient http.Client
+}
+
+func NewClient(timeout time.Duration) Client {
+	return Client{
+		httpClient: http.Client{
+			Timeout: timeout,
+		},
+	}
+}
+
+func (c *Client) GetPokeLocationAreas(url string) (PokeResponse, error) {
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return PokeResponse{}, err
 	}
 
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return PokeResponse{}, err
+	}
 	body, err := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	if err != nil {
