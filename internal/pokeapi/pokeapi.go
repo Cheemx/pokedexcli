@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/Cheemx/pokedexcli/internal/pokecache"
 )
 
 // internal is a special directory name recognised by the go tool
@@ -24,11 +26,13 @@ type PokeResponse struct {
 }
 
 type Client struct {
+	cache      pokecache.Cache
 	httpClient http.Client
 }
 
-func NewClient(timeout time.Duration) Client {
+func NewClient(timeout, cacheInterval time.Duration) Client {
 	return Client{
+		cache: *pokecache.NewCache(cacheInterval),
 		httpClient: http.Client{
 			Timeout: timeout,
 		},
@@ -36,6 +40,15 @@ func NewClient(timeout time.Duration) Client {
 }
 
 func (c *Client) GetPokeLocationAreas(url string) (PokeResponse, error) {
+	if val, ok := c.cache.Get(url); ok {
+		var response PokeResponse
+		err := json.Unmarshal(val, &response)
+		if err != nil {
+			return PokeResponse{}, err
+		}
+		return response, nil
+	}
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return PokeResponse{}, err
@@ -55,5 +68,7 @@ func (c *Client) GetPokeLocationAreas(url string) (PokeResponse, error) {
 	if err != nil {
 		return PokeResponse{}, err
 	}
+
+	c.cache.Add(url, body)
 	return response, nil
 }

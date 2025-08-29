@@ -33,7 +33,7 @@ func main() {
 		},
 	}
 	sc := bufio.NewScanner(os.Stdin)
-	pokeClient := pokeapi.NewClient(5 * time.Second)
+	pokeClient := pokeapi.NewClient(5*time.Second, 5*time.Minute)
 	conf := &config{
 		Previous: "",
 		Next:     "",
