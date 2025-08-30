@@ -31,6 +31,11 @@ func main() {
 			description: "Displays previous 20 location in Pokemon World",
 			callback:    commandMapB,
 		},
+		"explore": {
+			name:        "explore",
+			description: "Displays names of pokemons in given location areas",
+			callback:    commandExplore,
+		},
 	}
 	sc := bufio.NewScanner(os.Stdin)
 	pokeClient := pokeapi.NewClient(5*time.Second, 5*time.Minute)
@@ -44,7 +49,20 @@ func main() {
 		if !sc.Scan() {
 			break
 		}
-		cmd := sc.Text()
+		cmnd := sc.Text()
+		cmdArgs := cleanInput(cmnd)
+		if len(cmdArgs) < 1 {
+			fmt.Println("Enter a command!")
+		}
+		cmd := cmdArgs[0]
+		if cmd == "explore" && len(cmdArgs) == 1 {
+			fmt.Println("You need to provide a valid location")
+			continue
+		}
+		var loc string
+		if len(cmdArgs) > 1 {
+			loc = cmdArgs[1]
+		}
 		val, ok := mep[cmd]
 		if !ok {
 			fmt.Println("Unknown command")
@@ -62,6 +80,12 @@ func main() {
 			val.callback(conf)
 		case "mapb":
 			val.callback(conf)
+		case "explore":
+			val.callback(&config{
+				Previous: "",
+				Next:     loc,
+				Client:   pokeClient,
+			})
 		}
 	}
 }

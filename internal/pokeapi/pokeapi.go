@@ -6,38 +6,11 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"time"
-
-	"github.com/Cheemx/pokedexcli/internal/pokecache"
 )
 
 // internal is a special directory name recognised by the go tool
 // which will prevent one package from being imported by another
 // unless both share a common ancestor.
-
-type PokeResponse struct {
-	Count    int    `json:"count,omitempty"`
-	Next     string `json:"next,omitempty"`
-	Previous string `json:"previous,omitempty"`
-	Results  []struct {
-		Name string `json:"name,omitempty"`
-		URL  string `json:"url,omitempty"`
-	} `json:"results,omitempty"`
-}
-
-type Client struct {
-	cache      pokecache.Cache
-	httpClient http.Client
-}
-
-func NewClient(timeout, cacheInterval time.Duration) Client {
-	return Client{
-		cache: *pokecache.NewCache(cacheInterval),
-		httpClient: http.Client{
-			Timeout: timeout,
-		},
-	}
-}
 
 func (c *Client) GetPokeLocationAreas(url string) (PokeResponse, error) {
 	if val, ok := c.cache.Get(url); ok {
@@ -70,5 +43,31 @@ func (c *Client) GetPokeLocationAreas(url string) (PokeResponse, error) {
 	}
 
 	c.cache.Add(url, body)
+	return response, nil
+}
+
+func (c *Client) GetPokeNamesFromLocationAreas(locationName string) (LocationArea, error) {
+	url := pokeapi + locationName
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return LocationArea{}, err
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return LocationArea{}, err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return LocationArea{}, err
+	}
+
+	var response LocationArea
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return LocationArea{}, err
+	}
 	return response, nil
 }

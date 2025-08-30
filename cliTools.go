@@ -54,6 +54,7 @@ func commandMap(c *config) error {
 	}
 	return nil
 }
+
 func commandMapB(c *config) error {
 	if c.Previous == "" {
 		fmt.Println("you're on the first page.")
@@ -71,5 +72,23 @@ func commandMapB(c *config) error {
 	for _, loc := range res.Results {
 		fmt.Println(loc.Name)
 	}
+	return nil
+}
+
+func commandExplore(c *config) error {
+	if c.Next == "" {
+		fmt.Println("No Location Provided")
+		return nil
+	}
+
+	res, err := c.Client.GetPokeNamesFromLocationAreas(c.Next)
+	if err != nil {
+		return err
+	}
+	pokemons := res.PokemonEncounters
+	for _, pokeName := range pokemons {
+		fmt.Println(pokeName.Pokemon.Name)
+	}
+
 	return nil
 }
