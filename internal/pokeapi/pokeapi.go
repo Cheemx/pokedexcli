@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+
+	"github.com/Cheemx/pokedexcli/internal/pokemon"
 )
 
 // internal is a special directory name recognised by the go tool
@@ -68,6 +70,32 @@ func (c *Client) GetPokeNamesFromLocationAreas(locationName string) (LocationAre
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return LocationArea{}, err
+	}
+	return response, nil
+}
+
+func (c *Client) GetPokemonInformation(pokeName string) (pokemon.Pokemon, error) {
+	url := pokemonApi + pokeName
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return pokemon.Pokemon{}, err
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return pokemon.Pokemon{}, err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return pokemon.Pokemon{}, err
+	}
+
+	var response pokemon.Pokemon
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return pokemon.Pokemon{}, err
 	}
 	return response, nil
 }

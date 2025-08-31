@@ -92,3 +92,28 @@ func commandExplore(c *config) error {
 
 	return nil
 }
+
+func commandCatch(c *config) error {
+	pokemonName := cleanInput(c.Next)
+	if pokemonName[0] == "" {
+		fmt.Println("No Name Provided")
+		return nil
+	}
+
+	fmt.Printf("Throwing a Pokeball at %s...\n", pokemonName[0])
+
+	res, err := c.Client.GetPokemonInformation(pokemonName[0])
+	if err != nil {
+		return fmt.Errorf("error here: %s", err)
+	}
+
+	canCatch := canCatchPokemon(res.BaseExperience)
+	if canCatch {
+		fmt.Printf("%s was caught!\n", pokemonName[0])
+		catchedPokemons[pokemonName[0]] = res
+	}
+	if !canCatch {
+		fmt.Printf("%s escaped!\n", pokemonName[0])
+	}
+	return nil
+}

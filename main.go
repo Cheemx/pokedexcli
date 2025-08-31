@@ -7,7 +7,10 @@ import (
 	"time"
 
 	"github.com/Cheemx/pokedexcli/internal/pokeapi"
+	"github.com/Cheemx/pokedexcli/internal/pokemon"
 )
+
+var catchedPokemons = make(map[string]pokemon.Pokemon)
 
 func main() {
 	mep := map[string]cliCommand{
@@ -36,6 +39,11 @@ func main() {
 			description: "Displays names of pokemons in given location areas",
 			callback:    commandExplore,
 		},
+		"catch": {
+			name:        "catch",
+			description: "Tries to catch a pokemon specified by command argument",
+			callback:    commandCatch,
+		},
 	}
 	sc := bufio.NewScanner(os.Stdin)
 	pokeClient := pokeapi.NewClient(5*time.Second, 5*time.Minute)
@@ -55,13 +63,13 @@ func main() {
 			fmt.Println("Enter a command!")
 		}
 		cmd := cmdArgs[0]
-		if cmd == "explore" && len(cmdArgs) == 1 {
+		if (cmd == "explore" || cmd == "catch") && len(cmdArgs) == 1 {
 			fmt.Println("You need to provide a valid location")
 			continue
 		}
-		var loc string
+		var argName string
 		if len(cmdArgs) > 1 {
-			loc = cmdArgs[1]
+			argName = cmdArgs[1]
 		}
 		val, ok := mep[cmd]
 		if !ok {
@@ -83,7 +91,13 @@ func main() {
 		case "explore":
 			val.callback(&config{
 				Previous: "",
-				Next:     loc,
+				Next:     argName,
+				Client:   pokeClient,
+			})
+		case "catch":
+			val.callback(&config{
+				Previous: "",
+				Next:     argName,
 				Client:   pokeClient,
 			})
 		}
