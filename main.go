@@ -44,6 +44,11 @@ func main() {
 			description: "Tries to catch a pokemon specified by command argument",
 			callback:    commandCatch,
 		},
+		"inspect": {
+			name:        "inspect",
+			description: "Allow players to see details of a Pokemon they have caught",
+			callback:    commandInspect,
+		},
 	}
 	sc := bufio.NewScanner(os.Stdin)
 	pokeClient := pokeapi.NewClient(5*time.Second, 5*time.Minute)
@@ -63,7 +68,7 @@ func main() {
 			fmt.Println("Enter a command!")
 		}
 		cmd := cmdArgs[0]
-		if (cmd == "explore" || cmd == "catch") && len(cmdArgs) == 1 {
+		if (cmd == "explore" || cmd == "catch" || cmd == "inspect") && len(cmdArgs) == 1 {
 			fmt.Println("You need to provide a valid location")
 			continue
 		}
@@ -95,6 +100,12 @@ func main() {
 				Client:   pokeClient,
 			})
 		case "catch":
+			val.callback(&config{
+				Previous: "",
+				Next:     argName,
+				Client:   pokeClient,
+			})
+		case "inspect":
 			val.callback(&config{
 				Previous: "",
 				Next:     argName,
