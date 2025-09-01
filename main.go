@@ -49,6 +49,11 @@ func main() {
 			description: "Allow players to see details of a Pokemon they have caught",
 			callback:    commandInspect,
 		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "It prints a list of all the names of the Pokemon User has caught!",
+			callback:    commandPokedex,
+		},
 	}
 	sc := bufio.NewScanner(os.Stdin)
 	pokeClient := pokeapi.NewClient(5*time.Second, 5*time.Minute)
@@ -111,6 +116,8 @@ func main() {
 				Next:     argName,
 				Client:   pokeClient,
 			})
+		case "pokedex":
+			val.callback(&config{})
 		}
 	}
 }
